@@ -2,7 +2,7 @@ const axios = require('axios')
 const path = require('path')
 const fs = require('fs-extra')
 // utils
-const {generateAuthorization} = require('./utils/auth')
+const { generateAuthorization, transformConfig } = require('./utils/auth')
 
 // 配置缓存
 let agileConfigCache
@@ -13,20 +13,18 @@ let agileConfigCache
  * @returns {Promise<void>}
  */
 async function init(options) {
-  const {appid, secret} = options
-  if (!appid || !secret) {
+  const {appid, secret, env, nodes} = options
+  if (!appid || !secret || !env || !nodes) {
     console.error({
-      message: '必要参数不能为空',
+      message: '初始化参数不完整！',
     });
     process.exit(-1);
   }
   const beginTime = Date.now();
   // 设置请求头
   axios.interceptors.request.use(config => {
-    if (appid && secret) {
-      const headers = generateAuthorization(options)
-      config.headers = {...config.headers, ...headers}
-    }
+    const headers = generateAuthorization(options)
+    config.headers = {...config.headers, ...headers}
     return config;
   });
   // 初始化agile配置
@@ -68,14 +66,10 @@ async function getAgileConfigAsync(options) {
   // 从接口中获取
   try {
     const res = await getAgileConfigPromise(options);
-    agileConfigCache = res.data[0];
+    agileConfigCache = transformConfig(res.data);
     fs.writeJsonSync(path.resolve(__dirname, './agileConfig.json'), agileConfigCache);
     return agileConfigCache;
   } catch (err) {
-    const resStatus = err.response && err.response.status;
-    if (resStatus === 401) {
-      throw new Error(`Unauthorized Agile config for: ${options.appid}`);
-    }
     throw err;
   }
 }
@@ -101,8 +95,7 @@ function getAgileConfigFromCache(beginTime) {
         return agileConfigCache
       }
     }
-  } catch (err) {
-  }
+  } catch (err) {}
 
   return agileConfigCache;
 }
@@ -112,41 +105,36 @@ function getAgileConfigFromCache(beginTime) {
  * @param options
  * @returns {Promise<*>}
  */
-function getAgileConfigPromise(options) {
-  const {nodes, appid, env} = options
-  let node
+async function getAgileConfigPromise(options) {
+  const { nodes, appid, env } = options
+  // 节点url地址
+  let urlPaths = []
+  let agileConfigRes
+  // 适配多节点
   if (Array.isArray(nodes)) {
-    // TODO: 支持多个节点
-    node = nodes[0]
+    urlPaths = nodes.map(item => `${item}/api/Config/app/${appid}?env=${env}`)
   } else {
-    node = nodes
+    urlPaths = [`${nodes}/api/Config/app/${appid}?env=${env}`]
   }
-  const url = `${node}/api/Config/app/${appid}?env=${env}`
-  return axios.get(url).catch((err) => {
-    let str = '';
-    const resStatus = err.response && err.response.status;
-    if (resStatus === 401) {
-      str = '请求无权限'
-      console.error({
-        url: `agile请求地址：${url}`,
-        message: `【agile】警告：获取agile配置失败,${str},appid: ${appid}`,
-        error: err,
-      })
-    } else if (resStatus === 404) {
-      str = 'agile地址不存在或者未发布'
-      console.error({
-        url: `agile请求地址：${url}`,
-        message: `【agile】警告：获取agile配置失败,${str}, axios请求发生错误，请再次尝试启动`,
-        error: err,
-      })
+  const getConfig = async (paths, index) => {
+    try {
+      agileConfigRes = await axios.get(urlPaths[index])
+    } catch (err) {
+      index = index + 1;
+      if (index < paths.length) {
+        await getConfig(paths, index);
+      } else {
+        console.error({
+          url: `agile请求地址：${urlPaths}`,
+          message: `【agile】警告：获取agile配置失败,appid: ${appid}`,
+          error: err,
+        })
+        throw err;
+      }
     }
-    console.error({
-      url: `agile请求地址：${url}`,
-      message: `【agile】警告：获取agile配置失败,${str},appid: ${appid}`,
-      error: err,
-    })
-    throw err;
-  });
+  };
+  await getConfig(urlPaths, 0);
+  return agileConfigRes
 }
 
 
@@ -158,8 +146,7 @@ function getAgileConfig() {
   if (!agileConfigCache) {
     try {
       agileConfigCache = fs.readJsonSync(path.resolve(__dirname, './agileConfig.json'))
-    } catch (err) {
-    }
+    } catch (err) {}
     if (!agileConfigCache) {
       throw new Error('【agile】: 请确保agile初始化已完成！');
     }
