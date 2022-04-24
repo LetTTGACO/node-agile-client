@@ -37,6 +37,9 @@ import { getAgileConfig } from 'node-agile-client';
 
 const { token, url } = getAgileConfig();
 ```
+# TODO
+- websocket长连接监听配置中心变化后更新本地缓存
+
 # Changelog
 ## v0.0.1
 - 支持多节点获取配置
