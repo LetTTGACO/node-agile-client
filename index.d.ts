@@ -19,6 +19,4 @@ export interface Options {
 
 export declare function init(options: Options): Promise<void>;
 
-export declare function getAgileConfigAsync(options: Options): any
-
 export declare function getAgileConfig(): any;

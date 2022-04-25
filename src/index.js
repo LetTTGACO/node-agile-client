@@ -31,7 +31,7 @@ async function init(options) {
   // 初始化agile配置
   try {
     await initAgileConfig(options);
-    console.info(`【agile】: 初始化agile服务成功，耗时: ${Date.now() - beginTime}ms。\r\n`);
+    console.info(`【agile】: 初始化agile服务成功，耗时: ${Date.now() - beginTime}ms。`);
   } catch (err) {
     console.error({
       message: '【agile】: 初始化agile失败',
@@ -50,11 +50,13 @@ async function init(options) {
 async function initAgileConfig(options) {
   // websocket长连接
   getNotifications(options)
-  await getAgileConfigAsync(options);
+  await getAgileConfigAsync(options, true);
 }
 
-
-
+/**
+ * websockt连接
+ * @param options
+ */
 function getNotifications(options) {
   // 生成wsUrl
   const wsPaths = generateUrl(options, true)
@@ -68,38 +70,23 @@ function getNotifications(options) {
       })
       ws.websocketOnOpen(() => {
         console.info(`【agile】: websocket连接成功，连接地址：${wsPaths[index]}`)
-        getAgileConfigAsync(options, false).then(() => {
-          console.info(`【agile】: 更新缓存成功, 更新时间：${getTime()}`)
-        }).catch(err => {
-          console.warn({
-            message: '【agile】: 更新缓存失败，将会读取本地缓存',
-            error: err
-          });
-          // NOTE 要不要考虑websocket连接成功但是http请求失败的情况
-          // throw err
-        })
+        getAgileConfigAsync(options, false).catch()
       })
       ws.websocketOnMessage((data) => {
         if (options.debug) console.info('【agile】: 客户端收到消息：' + data)
-        // 服务端更新了
         if (data.indexOf("Action") !== -1) {
+          // 服务端更新了
           const { Action: action } = JSON.parse(data)
           if (action === WEBSOCKET_ACTION.RELOAD) {
-            getAgileConfigAsync(options, false).then(() => {
-              console.info(`【agile】: 更新缓存成功, 更新时间：${getTime()}`)
-            }).catch(err => {
-              console.warn({
-                message: '【agile】: 更新缓存失败，将会读取本地缓存',
-                error: err
-              });
-              // NOTE 要不要考虑websocket连接成功但是http请求失败的情况
-              // throw err
-            })
+            getAgileConfigAsync(options, false).catch()
           }
           if (action === WEBSOCKET_ACTION.OFFLINE) {
             console.warn('【agile】: 断开连接，将会读取本地缓存');
             ws.removeSocket(true)
           }
+        } else {
+          // 心跳检测时/服务端主动关闭连接时，同步配置
+          getAgileConfigAsync(options, false).catch()
         }
       })
       ws.websocketOnError((err) => {
@@ -124,21 +111,19 @@ function getNotifications(options) {
           message: `【agile】：websocket连接失败，将会读取本地缓存`,
           error: err,
         })
-        throw err;
       }
     }
   }
   connect(0)
 }
 
-
 /**
  * 异步获取agile配置
  * @param options
- * @param useCache
+ * @param useCache 是否使用缓存
  * @returns {Promise<*>}
  */
-async function getAgileConfigAsync(options, useCache = true) {
+async function getAgileConfigAsync(options, useCache) {
   if (useCache) {
     // 优先从缓存中获取信息
     const beginTime = Date.now();
@@ -149,23 +134,22 @@ async function getAgileConfigAsync(options, useCache = true) {
   }
   // 从接口中获取
   try {
-    const response = await getAgileConfigPromise(options);
-    if (options.debug) console.info({
-      message: '【agile】获取配置原数据',
-      data: response.data
-    })
-    agileConfigCache = transformConfig(response.data);
+    agileConfigCache = await getAgileConfigPromise(options);
     if (options.debug) console.info({
       message: '【agile】JSON数据',
       data: agileConfigCache
     })
     fs.writeJsonSync(path.resolve(__dirname, './agileConfig.json'), agileConfigCache);
+    console.info(`【agile】: 更新缓存成功, 更新时间：${getTime()}`)
     return agileConfigCache;
   } catch (err) {
+    console.warn({
+      message: '【agile】: 更新缓存失败，将会读取本地缓存',
+      error: err
+    });
     throw err;
   }
 }
-
 
 /**
  * 从缓存中获取agile配置
@@ -179,11 +163,10 @@ function getAgileConfigFromCache(beginTime) {
   try {
     const cacheFile = path.join(__dirname, './agileConfig.json');
     const isHave = !!fs.statSync(cacheFile).size;
-    console.info('【agile】: 开始初始化agile配置(通过缓存获取)\r\n');
+    console.info('【agile】: 开始初始化agile配置(通过缓存获取)');
     if (isHave) {
       agileConfigCache = fs.readJsonSync(path.resolve(__dirname, './agileConfig.json'));
       if (agileConfigCache) {
-        console.info(`【agile】: 初始化agile服务成功，耗时: ${Date.now() - beginTime}ms。\r\n`);
         return agileConfigCache
       }
     }
@@ -203,12 +186,17 @@ async function getAgileConfigPromise(options) {
   let agileConfigRes
   const getConfig = async (paths, index) => {
     try {
-      agileConfigRes = await axios.get(urlPaths[index], {
+      const response = await axios.get(urlPaths[index], {
         timeout: options.httptimeout || 100000,
         headers: {
           ...options.headers,
         },
       })
+      if (options.debug) console.info({
+        message: '【agile】获取配置原数据',
+        data: response.data
+      })
+      agileConfigRes = transformConfig(response.data);
     } catch (err) {
       index = index + 1;
       if (index < paths.length) {
