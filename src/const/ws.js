@@ -6,3 +6,5 @@ const WEBSOCKET_ACTION = {
   RELOAD: 'reload',
   OFFLINE: 'offline',
 }
+
+exports.WEBSOCKET_ACTION = WEBSOCKET_ACTION

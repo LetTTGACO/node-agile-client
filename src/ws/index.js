@@ -31,7 +31,9 @@ class WS {
    */
   init() {
     Reflect.deleteProperty(this, this.websocket)
-    this.websocket = new WebSocket(this.socketUrl)
+    this.websocket = new WebSocket(this.socketUrl, {
+      ...this.option.wsOptions,
+    })
     this.websocketOnOpen()
     this.websocketOnMessage()
     this.websocketOnError()
