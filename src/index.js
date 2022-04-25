@@ -2,10 +2,10 @@ const fetch = require('node-fetch')
 const path = require('path')
 const fs = require('fs-extra')
 // utils
-const {generateAuthorization, transformConfig, getTime, generateUrl} = require('./utils')
-const {WS} = require('./ws')
+const { generateAuthorization, transformConfig, getTime, generateUrl } = require('./utils')
+const { WS } = require('./ws')
 // const
-const {WEBSOCKET_ACTION} = require('./const/ws')
+const { WEBSOCKET_ACTION } = require('./const/ws')
 
 // 配置缓存
 let agileConfigCache
@@ -16,7 +16,7 @@ let agileConfigCache
  * @returns {Promise<void>}
  */
 async function init(options) {
-  const {appid, secret, env, nodes} = options
+  const { appid, secret, env, nodes } = options
   if (!appid || !secret || !env || !nodes) {
     console.error({
       message: '【agile】初始化参数不完整！',

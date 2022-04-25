@@ -28,7 +28,7 @@ function shuffle(nodes) {
  * @returns {string[]|*[]}
  */
 function generateUrl(options, isWs) {
-  const {nodes, tag, name, appid, env} = options;
+  const { nodes, tag, name, appid, env } = options;
   let urlList
   if (Array.isArray(nodes)) {
     urlList = shuffle(nodes)

@@ -57,7 +57,6 @@ class WS {
         (typeof this.option.openCallback === 'function') && this.option.openCallback(event)
       }
     }
-
   }
 
   /**
