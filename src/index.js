@@ -2,7 +2,7 @@ const axios = require('axios')
 const path = require('path')
 const fs = require('fs-extra')
 // utils
-const { generateAuthorization, transformConfig } = require('./utils/auth')
+const { generateAuthorization, transformConfig, shuffle, WS  } = require('./utils')
 
 // 配置缓存
 let agileConfigCache
@@ -21,9 +21,10 @@ async function init(options) {
     process.exit(-1);
   }
   const beginTime = Date.now();
+  const headers = generateAuthorization(options)
+  options.headers = headers
   // 设置请求头
   axios.interceptors.request.use(config => {
-    const headers = generateAuthorization(options)
     config.headers = {...config.headers, ...headers}
     return config;
   });
@@ -47,21 +48,98 @@ async function init(options) {
  * @returns {Promise<*|undefined>}
  */
 async function initAgileConfig(options) {
-  // TODO websocket长连接
+  // websocket长连接
+  getNotifications(options)
   await getAgileConfigAsync(options);
 }
+
+
+
+function getNotifications(options) {
+  const nodePaths = shuffle(options.nodes)
+
+  function connect(index) {
+    const wsUrl = `ws://${nodePaths[index]}/ws?client_name=${options.name}&client_tag=${options.tag}`
+    try {
+      const ws = new WS(wsUrl);
+      ws.websocketOnOpen(() => {
+        console.info(`【agile】: websocket连接成功，连接地址：${wsUrl}`)
+        getAgileConfigAsync(options, false).then(() => {
+          console.info(`【agile】: 更新缓存成功`)
+        }).catch(err => {
+          console.warn({
+            message: '【agile】: 更新缓存失败，将会读取本地缓存',
+            error: err
+          });
+          // NOTE 要不要考虑websocket连接成功但是http请求失败的情况
+          // throw err
+        })
+      })
+      ws.websocketOnMessage((data) => {
+        console.info('【agile】: 客户端收到消息' + data)
+        const action = data.Action
+        if (action === WEBSOCKET_ACTION.RELOAD) {
+          getAgileConfigAsync(options).then(() => {
+            console.info(`【agile】: 更新缓存成功`)
+          }).catch(err => {
+            console.warn({
+              message: '【agile】: 更新缓存失败，将会读取本地缓存',
+              error: err
+            });
+            // NOTE 要不要考虑websocket连接成功但是http请求失败的情况
+            // throw err
+          })
+        }
+        if (action === WEBSOCKET_ACTION.OFFLINE) {
+          console.warn('【agile】: 断开连接，将会读取本地缓存');
+          ws.removeSocket(true)
+        }
+      })
+      ws.websocketOnError((err) => {
+        console.warn({
+          message: '【agile】: 连接发生错误，正在尝试重新连接...',
+          error: err
+        });
+        throw err
+      })
+      ws.websocketOnClose(() => {
+        if (!!ws.getActiveLink().disconnect){
+          console.warn('【agile】: 服务端主动连接断开，将会读取本地缓存');
+        }
+      })
+    } catch (err) {
+      index = index + 1;
+      if (index < nodePaths.length) {
+        connect(index)
+      } else {
+        console.error({
+          url: `【agile】请求地址：${nodePaths}`,
+          message: `【agile】警告：websocket连接失败，将会读取本地缓存`,
+          error: err,
+        })
+        throw err;
+      }
+    }
+
+  }
+  connect(0)
+}
+
 
 /**
  * 异步获取agile配置
  * @param options
+ * @param useCache
  * @returns {Promise<*>}
  */
-async function getAgileConfigAsync(options) {
-  // 优先从缓存中获取信息
-  const beginTime = Date.now();
-  const agileConfig = getAgileConfigFromCache(beginTime);
-  if (agileConfig) {
-    return agileConfig;
+async function getAgileConfigAsync(options, useCache = true) {
+  if (useCache) {
+    // 优先从缓存中获取信息
+    const beginTime = Date.now();
+    const agileConfig = getAgileConfigFromCache(beginTime);
+    if (agileConfig) {
+      return agileConfig;
+    }
   }
   // 从接口中获取
   try {
@@ -112,7 +190,8 @@ async function getAgileConfigPromise(options) {
   let agileConfigRes
   // 适配多节点
   if (Array.isArray(nodes)) {
-    urlPaths = nodes.map(item => `${item}/api/Config/app/${appid}?env=${env}`)
+    const shuffleNode = shuffle(nodes)
+    urlPaths = shuffleNode.map(item => `${item}/api/Config/app/${appid}?env=${env}`)
   } else {
     urlPaths = [`${nodes}/api/Config/app/${appid}?env=${env}`]
   }
