@@ -29,12 +29,7 @@ function shuffle(nodes) {
  */
 function generateUrl(options, isWs) {
   const { nodes, tag, name, appid, env } = options;
-  let urlList
-  if (Array.isArray(nodes)) {
-    urlList = shuffle(nodes)
-  } else {
-    urlList = [nodes]
-  }
+  const urlList = shuffle(String(nodes).split(',').filter(item => !!item))
   if (isWs) {
     // ws连接
     return urlList.map(item => {

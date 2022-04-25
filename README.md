@@ -15,31 +15,38 @@ npm i node-agile-client
 ## Init
 在你的node项目初始化的时候初始化`node-agile-client`
 ```javascript
-import { init } from 'node-agile-client';
+const { init } = require('node-agile-client');
 
 init({
-  appid: 'testProject',
-  secret: '123456',
-  node: 'http://192.168.1.1',
-  env: 'DEV'
+  appid: 'app',
+  secret: 'xxx',
+  node: 'http://192.168.1.1,http://192.168.1.2',
+  env: 'DEV',
+  tag: '',
+  name: '',
+  httptimeout: 100,
+  debug: false,
 });
 ```
-| 参数名         | 含义                                |         
-| ------------- | ---------------------------------- | 
-| appid         | 配置中心的应用id                      |  
-| secret        | 配置中心的应用密钥                     |  
-| node          | 配置中心的服务端节点地址，支持多节点配置没，例如['http://192.168.1.1','http://192.168.1.2']|  
-| env           | 访问环境，DEV,TEST,STAGING,PROD      |                 
+|配置项名称|数据类型|配置项说明|是否必填|备注|
+|--|--|--|--|--|
+|appid|string|应用ID|是|对应后台管理中应用的`应用ID`|
+|secret|string|应用密钥|是|对应后台管理中应用的`密钥`|
+|nodes|string|应用配置节点|是|存在多个节点则使用逗号`,`分隔|
+|env|string|配置中心的环境|否|通过此配置决定拉取哪个环境的配置信息；如果不配置，服务端会默认返回第一个环境的配置|
+|name|string|连接客户端的自定义名称|否|方便在agile配置中心后台对当前客户端进行查阅与管理|
+|tag|string|连接客户端自定义标签|否|方便在agile配置中心后台对当前客户端进行查阅与管理|
+|httptimeout|number|http请求超时时间|否|配置 client 发送 http 请求的时候的超时时间，默认100000(100秒)|                                                   |
+|debug|boolean|debug模式|否|打印更多信息|                                                   |
 
 ## Use
 ```javascript
-import { getAgileConfig } from 'node-agile-client';
+const { getAgileConfig }  = require('node-agile-client');
 
 const { token, url } = getAgileConfig();
 ```
-# TODO
-- websocket长连接监听配置中心变化后更新本地缓存
+
 
 # Changelog
 ## v0.0.1
-- 支持多节点获取配置
+- 支持多节点获取配置和websocket长链接监听
