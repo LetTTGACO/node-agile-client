@@ -7,6 +7,11 @@ AgileConfig（配置中心）的node客户端
 本项目为Node.js 客户端,工作原理如下：
 ![](assets/README/img.jpg)
 
+# Features
+- 支持缓存获取配置配置
+- 支持websocket长连接定时获取配置
+- websocket/http连接失败时降级使用缓存配置
+- 多节点重试机制
 # Usage
 ## Install
 ```bash
