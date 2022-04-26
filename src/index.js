@@ -70,7 +70,8 @@ function getNotifications(options) {
       })
       ws.websocketOnOpen(() => {
         console.info(`【agile】: websocket连接成功，连接地址：${wsPaths[index]}`)
-        getAgileConfigAsync(options, false).catch()
+        // ws连接成功后通过心跳检测拿配置，这里不再多一次请求配置
+        // getAgileConfigAsync(options, false).catch()
       })
       ws.websocketOnMessage((data) => {
         if (options.debug) console.info('【agile】: 客户端收到消息：' + data)
@@ -131,6 +132,7 @@ async function getAgileConfigAsync(options, useCache) {
     if (agileConfig) {
       return agileConfig;
     }
+    console.info('【agile】: 开始初始化agile配置(通过接口获取)');
   }
   // 从接口中获取
   try {

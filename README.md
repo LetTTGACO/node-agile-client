@@ -5,7 +5,7 @@ AgileConfig（配置中心）的node客户端
 [AgileConfig](https://github.com/dotnetcore/AgileConfig) 是一个基于.net core开发的轻量级配置中心。 AgileConfig秉承轻量化的特点，部署简单、配置简单、使用简单、学习简单，它只提取了必要的一些功能，并没有像Apollo那样复杂且庞大。但是它的功能也已经足够你替换webconfig，appsettings.json这些文件了。如果你不想用微服务全家桶，不想为了部署一个配置中心而需要看N篇教程跟几台服务器那么你可以试试AgileConfig ：）
 
 本项目为Node.js 客户端,工作原理如下：
-![](assets/README/img.jpeg)
+![](assets/README/img.jpg)
 
 # Usage
 ## Install
