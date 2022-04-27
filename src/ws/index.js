@@ -150,7 +150,6 @@ class WS {
     this.websocket.close(1000)
   }
 
-
   /**
    * 心跳机制
    * @param time
@@ -159,6 +158,7 @@ class WS {
   sendPing (time = 5000, ping = 'ping'){
     clearInterval(this.sendPingInterval);
     if (time === -1) return
+    this.send(ping)
     this.sendPingInterval = setInterval(() => {
       this.send(ping)
     }, time)

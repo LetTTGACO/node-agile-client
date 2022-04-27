@@ -60,7 +60,7 @@ async function initAgileConfig(options) {
 function getNotifications(options) {
   // 生成wsUrl
   const wsPaths = generateUrl(options, true)
-  if (options.debug) console.info({ message: '【agile】websocket请求地址', data: wsPaths })
+  if (options.debug) console.info({ message: '【agile】：websocket所有请求地址', data: wsPaths })
 
   function connect(index) {
     try {
@@ -70,11 +70,9 @@ function getNotifications(options) {
       })
       ws.websocketOnOpen(() => {
         console.info(`【agile】: websocket连接成功，连接地址：${wsPaths[index]}`)
-        // ws连接成功后通过心跳检测拿配置，这里不再多一次请求配置
-        // getAgileConfigAsync(options, false).catch()
       })
       ws.websocketOnMessage((data) => {
-        if (options.debug) console.info('【agile】: 客户端收到消息：' + data)
+        if (options.debug) console.info('【agile】：客户端收到消息：' + data)
         if (data.indexOf("Action") !== -1) {
           // 服务端更新了
           const { Action: action } = JSON.parse(data)
@@ -82,25 +80,29 @@ function getNotifications(options) {
             getAgileConfigAsync(options, false).catch()
           }
           if (action === WEBSOCKET_ACTION.OFFLINE) {
-            console.warn('【agile】: 断开连接，将会读取本地缓存');
             ws.removeSocket(true)
           }
-        } else {
+        } else if (data !== '0' && data.startsWith('V:')) {
+          if (options.debug) {
+            console.info('【agile】: 服务端的MD5：' + data.slice(2))
+            console.info('【agile】: 缓存中的MD5：' + agileConfigCache.md5)
+          }
           // 心跳检测时/服务端主动关闭连接时，同步配置
-          getAgileConfigAsync(options, false).catch()
+          if (data.slice(2) !== agileConfigCache.md5) {
+            console.info('【agile】: 配置更新，即将重新读取配置')
+            getAgileConfigAsync(options, false).catch()
+          }
         }
       })
       ws.websocketOnError((err) => {
         console.warn({
-          message: '【agile】: 连接发生错误，正在尝试重新连接...',
+          message: '【agile】: websocket连接发生错误，正在尝试重新连接...',
           error: err
         });
         throw err
       })
       ws.websocketOnClose(() => {
-        if (!!ws.getActiveLink().disconnect){
-          console.warn('【agile】: 服务端主动断开连接，将会读取本地缓存');
-        }
+        console.warn('【agile】: websocket断开连接，将会读取本地缓存');
       })
     } catch (err) {
       index = index + 1;
@@ -108,7 +110,7 @@ function getNotifications(options) {
         connect(index)
       } else {
         console.error({
-          url: `【agile】请求地址：${wsPaths}`,
+          url: `【agile】：请求地址：${wsPaths}`,
           message: `【agile】：websocket连接失败，将会读取本地缓存`,
           error: err,
         })
@@ -138,7 +140,7 @@ async function getAgileConfigAsync(options, useCache) {
   try {
     agileConfigCache = await getAgileConfigPromise(options);
     if (options.debug) console.info({
-      message: '【agile】JSON数据',
+      message: '【agile】：JSON数据',
       data: agileConfigCache
     })
     fs.writeJsonSync(path.resolve(__dirname, './agileConfig.json'), agileConfigCache);
@@ -185,8 +187,10 @@ function getAgileConfigFromCache(beginTime) {
 async function getAgileConfigPromise(options) {
   // 获取url
   const urlPaths = generateUrl(options, false);
+  if (options.debug) console.info({ message: '【agile】所有接口请求地址', data: urlPaths })
   let agileConfigRes
   const getConfig = async (paths, index) => {
+    console.info(`【agile】：接口请求地址：${paths[index]}`)
     try {
       const response = await axios.get(urlPaths[index], {
         timeout: options.httptimeout || 100000,
@@ -231,7 +235,7 @@ function getAgileConfig() {
       throw new Error('【agile】: 请确保agile初始化已完成！');
     }
   }
-  return agileConfigCache;
+  return agileConfigCache.data;
 }
 
 exports.init = init

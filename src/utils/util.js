@@ -1,3 +1,5 @@
+const md5 = require("md5");
+
 /**
  * 从节点数组随机选择一个节点
  * @param nodes
@@ -67,7 +69,41 @@ function getTime() {
   return `${date.getFullYear()}-${nowMonth}-${strDate} ${hour}:${minute}:${second}`
 }
 
+/**
+ * 生成md5
+ * @param configs
+ * @returns {string|*}
+ */
+function generateMd5(configs) {
+  const keyStr = configs.map(item => `${item.group}:${item.key}`).sort((a, b) => a - b).join('&')
+  const valueStr = configs.map(item => item.value).sort((a, b) => a - b).join('&')
+  const txt = `${keyStr}&${valueStr}`
+  return md5(txt).toUpperCase()
+}
+
+/**
+ * 将[{key: abc, value: def}]转换为{abc: def}
+ * @param configs
+ */
+function transformConfig(configs) {
+  if (configs.length === 0) {
+    return {
+      data: {},
+    };
+  }
+  const result = {
+    data: {},
+    md5: ''
+  };
+  configs.forEach(item => {
+    result.data[item.key] = item.value;
+  });
+  result.md5 = generateMd5(configs)
+  return result;
+}
+
 exports.randomNode = randomNode;
 exports.shuffle = shuffle;
 exports.generateUrl = generateUrl;
 exports.getTime = getTime;
+exports.transformConfig = transformConfig;

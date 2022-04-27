@@ -15,20 +15,4 @@ function generateAuthorization(options) {
   }
 }
 
-/**
- * 将[{key: abc, value: def}]转换为{abc: def}
- * @param config
- */
-function transformConfig(config) {
-  if (config.length === 0) {
-    return {};
-  }
-  const result = {};
-  config.forEach(item => {
-    result[item.key] = item.value;
-  });
-  return result;
-}
-
 exports.generateAuthorization = generateAuthorization;
-exports.transformConfig = transformConfig;
