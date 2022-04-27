@@ -53,5 +53,7 @@ const { token, url } = getAgileConfig();
 
 
 # Changelog
+## v0.0.2
+- 通过md5优化获取配置的逻辑，减少配置中心的访问次数
 ## v0.0.1
 - 支持多节点获取配置和websocket长链接监听
