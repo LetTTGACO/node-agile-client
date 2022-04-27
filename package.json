@@ -1,6 +1,6 @@
 {
   "name": "node-agile-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "AgileConfig的node客户端",
   "main": "src/index.js",
   "scripts": {
