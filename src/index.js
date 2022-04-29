@@ -16,9 +16,9 @@ let agileConfigCache
  * @returns {Promise<void>}
  */
 async function init(options) {
-  const { appid, secret, env, nodes } = options
+  const { appid, secret, nodes } = options
   if (options.debug) console.info({ message: '【agile】传入参数：', data: options })
-  if (!appid || !secret || !env || !nodes) {
+  if (!appid || !secret || !nodes) {
     console.error({
       message: '【agile】初始化参数不完整！',
     });
@@ -54,7 +54,7 @@ async function initAgileConfig(options) {
 }
 
 /**
- * websockt连接
+ * websocket连接
  * @param options
  */
 function getNotifications(options) {
@@ -189,8 +189,8 @@ async function getAgileConfigPromise(options) {
   const urlPaths = generateUrl(options, false);
   if (options.debug) console.info({ message: '【agile】所有接口请求地址', data: urlPaths })
   let agileConfigRes
-  const getConfig = async (paths, index) => {
-    console.info(`【agile】：接口请求地址：${paths[index]}`)
+  const getConfig = async (index) => {
+    console.info(`【agile】：接口请求地址：${urlPaths[index]}`)
     try {
       const response = await axios.get(urlPaths[index], {
         timeout: options.httptimeout || 100000,
@@ -205,8 +205,8 @@ async function getAgileConfigPromise(options) {
       agileConfigRes = transformConfig(response.data);
     } catch (err) {
       index = index + 1;
-      if (index < paths.length) {
-        await getConfig(paths, index);
+      if (index < urlPaths.length) {
+        await getConfig(urlPaths, index);
       } else {
         console.error({
           url: `agile请求地址：${urlPaths}`,
@@ -217,7 +217,7 @@ async function getAgileConfigPromise(options) {
       }
     }
   };
-  await getConfig(urlPaths, 0);
+  await getConfig(0);
   return agileConfigRes
 }
 

@@ -21,7 +21,6 @@ class WS {
     this.sendPingInterval = null  //心跳定时器
     this.reconnectInterval = null  //重连定时器
     this.activeLink = true  //socket对象是否可用
-    this.disconnect = false  //是否是服务端主动切断socket连接
     this.reconnectNum = 0 //重连次数限制
     this.init()
   }
@@ -51,7 +50,6 @@ class WS {
         this.send(this.option.onOpenAutoSendMsg)
       }
       if (typeof callback === 'function') {
-        this.disconnect = false
         callback(event)
       } else {
         (typeof this.option.openCallback === 'function') && this.option.openCallback(event)
@@ -144,9 +142,8 @@ class WS {
   /**
    * 移除socket并关闭
    */
-  removeSocket(disconnect) {
+  removeSocket() {
     this.activeLink = false
-    this.disconnect = disconnect
     this.websocket.close(1000)
   }
 
@@ -176,10 +173,7 @@ class WS {
    * 查看连接状态
    */
   getActiveLink() {
-    return {
-      activeLink: this.activeLink,
-      disconnect: this.disconnect
-    }
+    return this.activeLink
   }
 }
 
