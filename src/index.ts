@@ -1,21 +1,22 @@
-const axios = require('axios')
-const path = require('path')
-const fs = require('fs-extra')
+import axios from 'axios'
+import path from 'path'
+import fs from 'fs-extra'
 // utils
-const { generateAuthorization, transformConfig, getTime, generateUrl } = require('./utils')
-const { WS } = require('./ws')
+import { generateAuthorization, transformConfig, getTime, generateUrl } from './utils'
+import { WS } from './ws'
 // const
-const { WEBSOCKET_ACTION } = require('./const/ws')
+import { WEBSOCKET_ACTION } from './const/ws'
+import { Config, Data } from "./types";
 
 // 配置缓存
-let agileConfigCache
+let agileConfigCache: Data
 
 /**
  * 初始化agile配置
  * @param options
  * @returns {Promise<void>}
  */
-async function init(options) {
+export async function init(options: Config) {
   const { appid, secret, nodes } = options
   if (options.debug) console.info({ message: '【agile】传入参数：', data: options })
   if (!appid || !secret || !nodes) {
@@ -47,7 +48,7 @@ async function init(options) {
  * @param options
  * @returns {Promise<*|undefined>}
  */
-async function initAgileConfig(options) {
+async function initAgileConfig(options: Config) {
   // websocket长连接
   getNotifications(options)
   await getAgileConfigAsync(options, true);
@@ -57,12 +58,12 @@ async function initAgileConfig(options) {
  * websocket连接
  * @param options
  */
-function getNotifications(options) {
+function getNotifications(options: Config) {
   // 生成wsUrl
   const wsPaths = generateUrl(options, true)
   if (options.debug) console.info({ message: '【agile】：websocket所有请求地址', data: wsPaths })
 
-  function connect(index) {
+  function connect(index: number) {
     try {
       const ws = new WS(wsPaths[index], {
         debug: !!options.debug,
@@ -71,7 +72,7 @@ function getNotifications(options) {
       ws.websocketOnOpen(() => {
         console.info(`【agile】: websocket连接成功，连接地址：${wsPaths[index]}`)
       })
-      ws.websocketOnMessage((data) => {
+      ws.websocketOnMessage((data: any) => {
         if (options.debug) console.info('【agile】：客户端收到消息：' + data)
         if (data.indexOf("Action") !== -1) {
           // 服务端更新了
@@ -80,7 +81,7 @@ function getNotifications(options) {
             getAgileConfigAsync(options, false).catch()
           }
           if (action === WEBSOCKET_ACTION.OFFLINE) {
-            ws.removeSocket(true)
+            ws.removeSocket()
           }
         } else if (data !== '0' && data.startsWith('V:')) {
           if (options.debug) {
@@ -94,7 +95,7 @@ function getNotifications(options) {
           }
         }
       })
-      ws.websocketOnError((err) => {
+      ws.websocketOnError((err: any) => {
         console.warn({
           message: '【agile】: websocket连接发生错误，正在尝试重新连接...',
           error: err
@@ -126,11 +127,10 @@ function getNotifications(options) {
  * @param useCache 是否使用缓存
  * @returns {Promise<*>}
  */
-async function getAgileConfigAsync(options, useCache) {
+async function getAgileConfigAsync(options: Config, useCache: boolean) {
   if (useCache) {
     // 优先从缓存中获取信息
-    const beginTime = Date.now();
-    const agileConfig = getAgileConfigFromCache(beginTime);
+    const agileConfig = getAgileConfigFromCache();
     if (agileConfig) {
       return agileConfig;
     }
@@ -157,10 +157,9 @@ async function getAgileConfigAsync(options, useCache) {
 
 /**
  * 从缓存中获取agile配置
- * @param beginTime
  * @returns {*}
  */
-function getAgileConfigFromCache(beginTime) {
+function getAgileConfigFromCache() {
   if (agileConfigCache) {
     return agileConfigCache;
   }
@@ -184,12 +183,12 @@ function getAgileConfigFromCache(beginTime) {
  * @param options
  * @returns {Promise<*>}
  */
-async function getAgileConfigPromise(options) {
+async function getAgileConfigPromise(options: Config): Promise<any> {
   // 获取url
   const urlPaths = generateUrl(options, false);
   if (options.debug) console.info({ message: '【agile】所有接口请求地址', data: urlPaths })
   let agileConfigRes
-  const getConfig = async (index) => {
+  const getConfig = async (index: number) => {
     console.info(`【agile】：接口请求地址：${urlPaths[index]}`)
     try {
       const response = await axios.get(urlPaths[index], {
@@ -206,7 +205,7 @@ async function getAgileConfigPromise(options) {
     } catch (err) {
       index = index + 1;
       if (index < urlPaths.length) {
-        await getConfig(urlPaths, index);
+        await getConfig(index);
       } else {
         console.error({
           url: `agile请求地址：${urlPaths}`,
@@ -226,7 +225,7 @@ async function getAgileConfigPromise(options) {
  * 同步获取Agile配置
  * @returns {*}
  */
-function getAgileConfig() {
+export function getAgileConfig() {
   if (!agileConfigCache) {
     try {
       agileConfigCache = fs.readJsonSync(path.resolve(__dirname, './agileConfig.json'))
@@ -237,9 +236,5 @@ function getAgileConfig() {
   }
   return agileConfigCache.data;
 }
-
-exports.init = init
-exports.getAgileConfig = getAgileConfig
-
 
 

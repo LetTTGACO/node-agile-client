@@ -2,9 +2,20 @@
   "name": "node-agile-client",
   "version": "0.0.2",
   "description": "AgileConfig的node客户端",
-  "main": "src/index.js",
+  "main": "./lib/index.js",
+  "module": "./es/index.js",
+  "jsnext:main": "./es/index.js",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "es",
+    "lib"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:commonjs": "rimraf lib && tsc --target es5 --outDir lib --module commonjs --declaration",
+    "build:es": "rimraf es && tsc --target es6 --outDir es --module es6",
+    "build": "npm run build:commonjs && npm run build:es",
+    "ts": "ts-node src/",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -25,6 +36,11 @@
     "ws": "^8.5.0"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "@types/fs-extra": "^9.0.13",
+    "@types/md5": "^2.3.2",
+    "@types/ws": "^8.5.3",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
   }
 }
