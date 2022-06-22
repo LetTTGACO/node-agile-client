@@ -1,17 +1,19 @@
 {
   "compilerOptions": {
-    "strictNullChecks": true,                                 /* Enable all strict type-checking options. */
-    "noImplicitAny": true,                       /* Raise error on expressions and declarations with an implied 'any' type. */
-    // 模块的解析策略
-    "moduleResolution": "node",                  /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
-    "esModuleInterop": true                        /* Enables emit interoperability between CommonJS and ES Modules via creation */
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "es2018",
+    "lib": ["es2018"],
+    "outDir": "build/node",
+    "rootDirs": ["./src"],
+    "strict": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "removeComments": false,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "files": [
-    "src/index.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "lib",
-    "es"
-  ]
+  "exclude": ["build", "node_modules", "sample", "**/*.spec.ts", "test/**"]
 }
