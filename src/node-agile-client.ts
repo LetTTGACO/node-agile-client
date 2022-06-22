@@ -50,7 +50,9 @@ export async function init(options: Config) {
  */
 async function initAgileConfig(options: Config) {
   // websocket长连接
-  getNotifications(options)
+  setTimeout(() => {
+    getNotifications(options)
+  })
   await getAgileConfigAsync(options, true);
 }
 
