@@ -129,8 +129,7 @@ function getNotifications(options) {
 async function getAgileConfigAsync(options, useCache) {
   if (useCache) {
     // 优先从缓存中获取信息
-    const beginTime = Date.now();
-    const agileConfig = getAgileConfigFromCache(beginTime);
+    const agileConfig = getAgileConfigFromCache();
     if (agileConfig) {
       return agileConfig;
     }
@@ -157,10 +156,9 @@ async function getAgileConfigAsync(options, useCache) {
 
 /**
  * 从缓存中获取agile配置
- * @param beginTime
  * @returns {*}
  */
-function getAgileConfigFromCache(beginTime) {
+function getAgileConfigFromCache() {
   if (agileConfigCache) {
     return agileConfigCache;
   }
@@ -206,7 +204,7 @@ async function getAgileConfigPromise(options) {
     } catch (err) {
       index = index + 1;
       if (index < urlPaths.length) {
-        await getConfig(urlPaths, index);
+        await getConfig(index);
       } else {
         console.error({
           url: `agile请求地址：${urlPaths}`,
