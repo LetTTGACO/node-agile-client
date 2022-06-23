@@ -20,7 +20,7 @@ npm i node-agile-client
 ## Init
 在你的node项目初始化的时候初始化`node-agile-client`
 ```javascript
-const { init } = require('node-agile-client');
+import { init } from 'node-agile-client';
 
 init({
   appid: 'app',
@@ -53,6 +53,10 @@ const { token, url } = getAgileConfig();
 
 
 # Changelog
+## v0.0.3
+- typescript改造
+- 支持cjs和esm5使用
+- 修复第一次启动报错的问题
 ## v0.0.2
 - 通过md5优化获取配置的逻辑，减少配置中心的访问次数
 ## v0.0.1
