@@ -6,12 +6,12 @@
   "module": "./esm5/index.js",
   "typings": "./types/index.d.ts",
   "scripts": {
-    "build:clean": "rimraf build",
-    "build": "npm run build:clean && npm run build:cjs && npm run build:esm5 && npm run build:types && npm run build:cp",
+    "prebuild": "rimraf build",
+    "build": "npm run build:cjs && npm run build:esm5 && npm run build:types",
     "build:esm5": "tsc --project tsconfig.esm5.json",
     "build:cjs": "tsc --project tsconfig.cjs.json",
     "build:types": "tsc --project tsconfig.types.json",
-    "build:cp": "cp LICENSE build/LICENSE && cp README.md build/README.md && cp package.json build/package.json"
+    "postbuild": "cp LICENSE build/LICENSE && cp README.md build/README.md && cp package.json build/package.json"
   },
   "repository": {
     "type": "git",
