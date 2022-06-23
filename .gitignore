@@ -105,3 +105,4 @@ dist
 .idea/
 .vscode/
 agileConfig.json
+build/

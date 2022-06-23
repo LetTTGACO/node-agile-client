@@ -1,4 +1,4 @@
-export interface Options {
+export interface Config {
   /** 应用id */
   appid: string;
   /** 应用的私钥 */
@@ -15,8 +15,11 @@ export interface Options {
   httptimeout?: number
   /** debug模式，打印更多信息 */
   debug?: boolean
+  /** 头部 */
+  headers: { Authorization: string; appid: string };
 }
 
-export declare function init(options: Options): Promise<void>;
-
-export declare function getAgileConfig(): any;
+export interface Data {
+  md5: string;
+  data: any
+}

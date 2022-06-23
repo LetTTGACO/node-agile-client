@@ -1,16 +1,28 @@
 {
   "name": "node-agile-client",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "AgileConfig的node客户端",
-  "main": "src/index.js",
+  "main": "./cjs/index.js",
+  "module": "./esm5/index.js",
+  "typings": "./types/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "rimraf build",
+    "build": "npm run build:cjs && npm run build:esm5 && npm run build:types",
+    "build:esm5": "tsc --project tsconfig.esm5.json",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build:types": "tsc --project tsconfig.types.json",
+    "postbuild": "cp LICENSE build/LICENSE && cp README.md build/README.md && cp package.json build/package.json"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/LetTTGACO/node-agile-client.git"
   },
-  "keywords": [],
+  "tags": [
+    "agile"
+  ],
+  "keywords": [
+    "配置中心"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -25,6 +37,11 @@
     "ws": "^8.5.0"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "@types/fs-extra": "^9.0.13",
+    "@types/md5": "^2.3.2",
+    "@types/ws": "^8.5.3",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.4"
   }
 }

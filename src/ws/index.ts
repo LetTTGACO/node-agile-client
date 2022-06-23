@@ -1,7 +1,16 @@
-const { WebSocket } = require('ws');
+import { WebSocket } from 'ws';
 
-class WS {
-  constructor(socketUrl, option) {
+export class WS {
+
+  private readonly socketUrl: string;
+  private option: any;
+  private websocket: any;
+  private sendPingInterval: any;
+  private reconnectInterval: any;
+  private activeLink: boolean;
+  private reconnectNum: number;
+
+  constructor(socketUrl: string, option: any) {
     this.socketUrl = socketUrl
     this.option = {
       onOpenAutoSendMsg:"",
@@ -33,17 +42,17 @@ class WS {
     this.websocket = new WebSocket(this.socketUrl, {
       ...this.option.wsOptions,
     })
-    this.websocketOnOpen()
-    this.websocketOnMessage()
-    this.websocketOnError()
-    this.websocketOnClose()
+    this.websocketOnOpen(null)
+    this.websocketOnMessage(null)
+    this.websocketOnError(null)
+    this.websocketOnClose(null)
   }
 
   /**
    * 连接成功
    */
-  websocketOnOpen(callback) {
-    this.websocket.onopen = (event) => {
+  websocketOnOpen(callback: any) {
+    this.websocket.onopen = (event: any) => {
       if (this.option.debug) console.log('%c websocket链接成功', 'color:green')
       this.sendPing(this.option.heartTime, this.option.heartMsg);
       if(this.option.onOpenAutoSendMsg){
@@ -61,7 +70,7 @@ class WS {
    * 发送数据
    * @param message
    */
-  send (message){
+  send (message: string) {
     if (this.websocket.readyState !== this.websocket.OPEN) {
       new Error('没有连接到服务器，无法发送消息')
       return
@@ -73,8 +82,8 @@ class WS {
    * 触发接收消息事件
    * @param callback
    */
-  websocketOnMessage(callback) {
-    this.websocket.onmessage = (event) => {
+  websocketOnMessage(callback: any) {
+    this.websocket.onmessage = (event: any) => {
       // 收到任何消息，重新开始倒计时心跳检测
       if (typeof callback === 'function') {
         callback(event.data)
@@ -88,8 +97,8 @@ class WS {
    * 连接错误
    * @param callback
    */
-  websocketOnError(callback) {
-    this.websocket.onerror = (event) => {
+  websocketOnError(callback: any) {
+    this.websocket.onerror = (event: any) => {
       if (this.option.debug) console.error('连接发生错误', event)
       if (typeof callback === 'function') {
         callback(event)
@@ -102,8 +111,8 @@ class WS {
   /**
    * 连接关闭
    */
-  websocketOnClose(callback) {
-    this.websocket.onclose = (event) => {
+  websocketOnClose(callback: any) {
+    this.websocket.onclose = (event: any) => {
       if (this.option.debug) console.warn('socket连接关闭,关于原因:', event)
       clearInterval(this.sendPingInterval)
       clearInterval(this.reconnectInterval);
@@ -177,4 +186,3 @@ class WS {
   }
 }
 
-exports.WS = WS
