@@ -46,7 +46,7 @@ init({
 
 ## Use
 ```javascript
-const { getAgileConfig }  = require('node-agile-client');
+import { getAgileConfig } from 'node-agile-client';
 
 const { token, url } = getAgileConfig();
 ```
