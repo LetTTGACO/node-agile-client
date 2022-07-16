@@ -15,8 +15,6 @@ export interface Config {
   httptimeout?: number
   /** debug模式，打印更多信息 */
   debug?: boolean
-  /** 头部 */
-  headers: { Authorization: string; appid: string };
 }
 
 export interface Data {

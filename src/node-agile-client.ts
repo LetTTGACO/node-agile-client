@@ -27,8 +27,12 @@ export async function init(options: Config) {
   }
   const beginTime = Date.now();
   // 生成请求头
+  // @ts-ignore
   options.headers = generateAuthorization(options)
-  if (options.debug) console.info({ message: '【agile】请求头：', data: options.headers })
+  if (options.debug) {
+    // @ts-ignore
+    console.info({ message: '【agile】请求头：', data: options.headers })
+  }
   // 初始化agile配置
   try {
     await initAgileConfig(options);
@@ -69,6 +73,7 @@ function getNotifications(options: Config) {
     try {
       const ws = new WS(wsPaths[index], {
         debug: !!options.debug,
+        // @ts-ignore
         wsOptions: { headers: options.headers },
       })
       ws.websocketOnOpen(() => {
@@ -196,6 +201,7 @@ async function getAgileConfigPromise(options: Config): Promise<any> {
       const response = await axios.get(urlPaths[index], {
         timeout: options.httptimeout || 100000,
         headers: {
+          // @ts-ignore
           ...options.headers,
         },
       })
