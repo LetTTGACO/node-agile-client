@@ -51,8 +51,9 @@ import { getAgileConfig } from 'node-agile-client';
 const { token, url } = getAgileConfig();
 ```
 
-
 # Changelog
+## v0.0.4
+- 修复type定义问题
 ## v0.0.3
 - typescript改造
 - 支持cjs和esm5使用

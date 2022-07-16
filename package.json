@@ -1,6 +1,6 @@
 {
   "name": "node-agile-client",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "AgileConfig的node客户端",
   "main": "./cjs/index.js",
   "module": "./esm5/index.js",
