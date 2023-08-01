@@ -7,7 +7,7 @@
   "typings": "./types/index.d.ts",
   "scripts": {
     "prebuild": "rimraf build",
-    "build": "npm run build:cjs && npm run build:esm5 && npm run build:types",
+    "build": "pnpm run build:cjs && pnpm run build:esm5 && pnpm run build:types",
     "build:esm5": "tsc --project tsconfig.esm5.json",
     "build:cjs": "tsc --project tsconfig.cjs.json",
     "build:types": "tsc --project tsconfig.types.json",
