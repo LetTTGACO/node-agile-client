@@ -1,10 +1,14 @@
 {
   "name": "node-agile-client",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "AgileConfig的node客户端",
   "main": "./cjs/index.js",
   "module": "./esm5/index.js",
   "typings": "./types/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "prebuild": "rimraf build",
     "build": "pnpm run build:cjs && pnpm run build:esm5 && pnpm run build:types",
