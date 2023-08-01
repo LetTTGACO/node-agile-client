@@ -12,9 +12,10 @@ jobs:
         with:
           node-version: 'lts/*'
           registry-url: https://registry.npmjs.org
-      - run: pnpm build:cjs
-      - run: pnpm build:esm5
-      - run: pnpm build:types
+      - run: npm i pnpm -g
+      - run: pnpm run build:cjs
+      - run: pnpm run build:esm5
+      - run: pnpm run build:types
       - run: cp LICENSE build/LICENSE
       - run: cp README.md build/README.md
       - run: jq 'del(.devDependencies) | del(.scripts)' package.json > build/package.json
