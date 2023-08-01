@@ -39,6 +39,7 @@
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/md5": "^2.3.2",
+    "@types/node": "^20.4.5",
     "@types/ws": "^8.5.3",
     "rimraf": "^3.0.2",
     "ts-node": "^10.8.1",
