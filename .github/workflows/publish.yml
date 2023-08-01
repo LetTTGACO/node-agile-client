@@ -13,7 +13,7 @@ jobs:
           node-version: 'lts/*'
           registry-url: https://registry.npmjs.org
       - run: npm i pnpm -g
-      - run: pnpm i
+      - run: pnpm install --no-frozen-lockfile
       - run: pnpm run build:cjs
       - run: pnpm run build:esm5
       - run: pnpm run build:types
