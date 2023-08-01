@@ -12,13 +12,12 @@ jobs:
         with:
           node-version: 'lts/*'
           registry-url: https://registry.npmjs.org
-      - run: npm ci --ignore-scripts
-      - run: npm run build:cjs
-      - run: npm run build:esm5
-      - run: npm run build:types
+      - run: pnpm build:cjs
+      - run: pnpm build:esm5
+      - run: pnpm build:types
       - run: cp LICENSE build/LICENSE
       - run: cp README.md build/README.md
       - run: jq 'del(.devDependencies) | del(.scripts)' package.json > build/package.json
-      - run: npm publish ./build
+      - run: pnpm publish ./build
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
