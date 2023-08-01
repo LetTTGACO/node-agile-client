@@ -77,7 +77,11 @@ function getNotifications(options: Config) {
         wsOptions: { headers: options.headers },
       })
       ws.websocketOnOpen(() => {
-        console.info(`【agile】: websocket连接成功，连接地址：${wsPaths[index]}`)
+        if (options.debug) {
+          console.info(`【agile】: websocket连接成功，连接地址：${wsPaths[index]}`)
+        } else {
+          console.info('【agile】: websocket连接成功')
+        }
       })
       ws.websocketOnMessage((data: any) => {
         if (options.debug) console.info('【agile】：客户端收到消息：' + data)
@@ -93,10 +97,10 @@ function getNotifications(options: Config) {
         } else if (data !== '0' && data.startsWith('V:')) {
           if (options.debug) {
             console.info('【agile】: 服务端的MD5：' + data.slice(2))
-            console.info('【agile】: 缓存中的MD5：' + agileConfigCache.md5)
+            console.info('【agile】: 缓存中的MD5：' + agileConfigCache?.md5)
           }
           // 心跳检测时/服务端主动关闭连接时，同步配置
-          if (data.slice(2) !== agileConfigCache.md5) {
+          if (data.slice(2) !== agileConfigCache?.md5) {
             console.info('【agile】: 配置更新，即将重新读取配置')
             getAgileConfigAsync(options, false).catch()
           }
