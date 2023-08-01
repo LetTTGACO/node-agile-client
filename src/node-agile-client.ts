@@ -200,7 +200,7 @@ async function getAgileConfigPromise(options: Config): Promise<any> {
   if (options.debug) console.info({ message: '【agile】所有接口请求地址', data: urlPaths })
   let agileConfigRes
   const getConfig = async (index: number) => {
-    console.info(`【agile】：接口请求地址：${urlPaths[index]}`)
+    if (options.debug) console.info(`【agile】：接口请求地址：${urlPaths[index]}`)
     try {
       const response = await axios.get(urlPaths[index], {
         timeout: options.httptimeout || 100000,
